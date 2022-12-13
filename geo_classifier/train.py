@@ -86,7 +86,6 @@ class GeoClassifier(pl.LightningModule):
         transforms = torchvision.transforms.Compose(
             [
                 torchvision.transforms.RandomHorizontalFlip(),
-                torchvision.transforms.RandomResizedCrop(224, scale=(0.66, 1.0)),
                 torchvision.transforms.ToTensor(),
                 torchvision.transforms.Normalize(
                     (0.485, 0.456, 0.406), (0.229, 0.224, 0.225)
@@ -113,7 +112,6 @@ class GeoClassifier(pl.LightningModule):
         transforms = torchvision.transforms.Compose(
             [
                 torchvision.transforms.Resize(256),
-                torchvision.transforms.CenterCrop(224),
                 torchvision.transforms.ToTensor(),
                 torchvision.transforms.Normalize(
                     (0.485, 0.456, 0.406), (0.229, 0.224, 0.225)
