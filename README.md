@@ -1,17 +1,6 @@
 # Инструкция по запуску
 
-1.  Если нет файла с куки запустить:
-
-'''
-python3 reg.py -n NAME
-'''
-
-NAME - название файла
-
-откроется geotastic.net , войти в аккаунт и потом в консоли нажать ENTER
-
-
-2. запустить бота:
+(не у всех работает :confused:)
 
 ```
 python3 geotastic_bot.py -r ROUNDS_NUM [--fetch-location] [--remove-arrows]
@@ -19,8 +8,7 @@ python3 geotastic_bot.py -r ROUNDS_NUM [--fetch-location] [--remove-arrows]
 
 ROUNDS_NUM - количество раундов.
 
-COOKIE_NAME - имя файла с кукки
-fetch-location - извлекать страну и город из информации о погоде (иногда не прогружается).
+fetch-location - извлекать координаты.
 
 remove-arrows - удалить из панорамы стрелки для передвижения.
 
