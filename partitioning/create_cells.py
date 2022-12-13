@@ -7,7 +7,7 @@ import argparse
 from time import time
 from functools import partial
 from multiprocessing import Pool
-from collections import Counter
+from collections import Counter, defaultdict
 
 import pandas as pd
 import s2sphere as s2
@@ -52,21 +52,16 @@ def init_cells(images_data, level):
 def gen_subcells(images_data, cells_image_num, level, img_max):
     images_data_new = []
     cells_image_num_new = {}
+    cells_image_num_new = defaultdict(lambda: 0, cells_image_num_new)
     for data in images_data:
         data_new = data
         hexid = data["hexid"]
         if cells_image_num[hexid] > img_max:
             hexid_new = get_parent_hexid(data["leaf_cell"], level)
             data_new["hexid"] = hexid_new
-            try:
-                cells_image_num_new[hexid_new] += 1
-            except:
-                cells_image_num_new[hexid_new] = 1
+            cells_image_num_new[hexid_new] += 1
         else:
-            try:
-                cells_image_num_new[hexid] += 1
-            except:
-                cells_image_num_new[hexid] = 1
+            cells_image_num_new[hexid] += 1
         images_data_new.append(data_new)
     return images_data_new, cells_image_num_new
 
