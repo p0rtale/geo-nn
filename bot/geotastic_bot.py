@@ -151,9 +151,7 @@ def start_bot(rounds_num:int,cookie_name:str, fetch_location:bool, remove_arrows
     
     '''
     # get, click, ...
-
     log_entries = driver.get_log("performance")
-
     for entry in log_entries:
         try:
             obj_serialized: str = entry.get("message")
