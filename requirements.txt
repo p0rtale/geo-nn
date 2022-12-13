@@ -1,0 +1,4 @@
+PyAutoGUI==0.9.53
+selenium==4.6.1
+undetected-chromedriver
+selenium-wire==5.1.0
