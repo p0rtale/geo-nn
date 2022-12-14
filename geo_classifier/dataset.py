@@ -13,15 +13,11 @@ from typing import Dict, Tuple
 from PIL import Image
 
 
-class PhotoCoordsCountryDataset(torch.utils.data.Dataset):
-    def __init__(self, path: str, transforms):
-        self.path = path
+class PhotoCoordsDataset(torch.utils.data.Dataset):
+    def __init__(self, dataset_path, images_dir, transforms):
+        self.images_path = images_path
         self.transforms = transforms
-
-        with open(os.path.join(self.path, "mapping/map_label_country.json")) as fin:
-            self.map_label_country = json.load(fin)
-
-        self.dataset = pd.read_csv(os.path.join(self.path, "datasets/dataset_label.csv"))
+        self.dataset = pd.read_csv(dataset_path)
 
     def __len__(self):
         return len(self.dataset * 3)
@@ -29,13 +25,13 @@ class PhotoCoordsCountryDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx) -> Tuple[torch.Tensor, dict]:
         subimg_num = idx % 3
         data = self.dataset.iloc[idx // 3]
-        img_id, lat, lon, country = int(data["img_id"]), data["lat"], data["lon"], int(data["country"])
+        img_id, lat, lon, class_label = int(data["img_id"]), data["lat"], data["lon"], int(data["class_label"])
 
-        image = Image.open(os.path.join(self.path, f"images/image{img_id}.png")).convert("RGB")
+        image = Image.open(os.path.join(self.images_dir, f"image{img_id}.png")).convert("RGB")
         w, h = image.size
         image = image.crop((w // 3 * subimg_num, 0, w // 3 * (subimg_num + 1), h))
         if image.width > 320 and image.height > 320:
             image = torchvision.transforms.Resize(320)(image)
         image = self.transforms(image)
 
-        return image, country, lat, lon
+        return image, class_label, lat, lon

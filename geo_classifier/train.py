@@ -23,8 +23,8 @@ class GeoClassifier(pl.LightningModule):
         self.model = self.__build_model(freeze)
 
         self.loss_fn = torch.nn.CrossEntropyLoss()
-        self.train_acc = MulticlassAccuracy(num_classes=self.hparams.countries_num)
-        self.val_acc = MulticlassAccuracy(num_classes=self.hparams.countries_num)
+        self.train_acc = MulticlassAccuracy(num_classes=self.hparams.num_classes)
+        self.val_acc = MulticlassAccuracy(num_classes=self.hparams.num_classes)
 
     def __build_model(self, freeze):
         logging.info("Build model")
@@ -35,7 +35,7 @@ class GeoClassifier(pl.LightningModule):
             for param in model.parameters():
                 param.requires_grad = False
 
-        model.fc = torch.nn.Linear(model.fc.in_features, self.hparams.countries_num)
+        model.fc = torch.nn.Linear(model.fc.in_features, self.hparams.num_classes)
 
         return model
 
@@ -93,8 +93,9 @@ class GeoClassifier(pl.LightningModule):
             ]
         )
 
-        dataset = PhotoCoordsCountryDataset(
-            path="data/",
+        dataset = PhotoCoordsDataset(
+            dataset_path=self.hparams.dataset_path,
+            images_dir=self.hparams.images_dir,
             transforms=transforms,
         )
 
@@ -120,7 +121,8 @@ class GeoClassifier(pl.LightningModule):
         )
 
         dataset = PhotoCoordsCountryDataset(
-            path="data/",
+            dataset_path=self.hparams.dataset_path,
+            images_dir=self.hparams.images_dir,
             transforms=transforms,
         )
 
@@ -159,8 +161,7 @@ def main(config):
 
 def parse_args():
     parser = ArgumentParser()
-    parser.add_argument("-c", "--config", type=Path, default=Path("config/model.yml"))
-    parser.add_argument("--progbar", action="store_true")
+    parser.add_argument("-c", "--config", type=Path, default=Path("config/model_cells.yml"))
     return parser.parse_args()
 
 

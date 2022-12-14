@@ -14,8 +14,10 @@ model_params:
     params:
       gamma: 0.5
       milestones: [4, 8, 12, 13, 14, 15]
-  countries_num: 73
+  num_classes: 42
   num_workers_per_loader: 6
+  images_dir: images/
+  dataset_path: data/datasets/dataset_label_cell.csv
 
 trainer_params:
   accelerator: gpu

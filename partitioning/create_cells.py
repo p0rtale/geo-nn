@@ -66,62 +66,36 @@ def gen_subcells(images_data, cells_image_num, level, img_max):
     return images_data_new, cells_image_num_new
 
 
-def write_output(images_data, cells_image_num, images_num, img_min, img_max, output, mapping_dir):
-    if not os.path.exists(output):
-        os.makedirs(output)
+def write_output(images_data, cells_image_num, map_cell_label, output, filename):
+    coords_mean = {}
+    for hexid in cells_image_num.keys():
+        coords_mean[hexid] = [0, 0]
+    for data in images_data:
+        coords_mean[data["hexid"]][0] += data["lat"]
+        coords_mean[data["hexid"]][1] += data["lon"]
 
-    filename = f"cells_{img_min}_{img_max}_images_{images_num}.csv"
-    logging.info(f"Write partitioning to {os.path.join(output, filename)}")
-    with open(os.path.join(output, filename), "w") as fout:
-        cells_writer = csv.writer(fout, delimiter=",")
+    cells_data = []
+    hexids_str = ""
+    for hexid, img_num in cells_image_num.items():
+        hexids_str += hexid + ","
+        cells_data.append({
+            "class_label": map_cell_label[hexid],
+            "hex_id": hexid,
+            "imgs_per_cell": img_num,
+            "latitude_mean": coords_mean[hexid][0] / img_num,
+            "longitude_mean": coords_mean[hexid][1] / img_num,
+        })
+    hexids_str = hexids_str[:-1]
+    logging.info(f"Hex ids: {hexids_str}.")
 
-        cells_writer.writerow(
-            [
-                "class_label",
-                "hex_id",
-                "imgs_per_cell",
-                "latitude_mean",
-                "longitude_mean",
-            ]
-        )
-
-        map_cell_label = {}
-        coords_mean = {}
-        label = 0
-        for hexid in cells_image_num.keys():
-            map_cell_label[hexid] = label
-            coords_mean[hexid] = [0, 0]
-            label += 1
-
-        map_image_label = {}
-        for data in images_data:
-            map_image_label[data["img_id"]] = map_cell_label[data["hexid"]]
-            coords_mean[data["hexid"]][0] += data["lat"]
-            coords_mean[data["hexid"]][1] += data["lon"]
-
-        map_path = os.path.join(mapping_dir, "map_label_cell.json")
-        logging.info(f"Write label mapping to {map_path}")
-        with open(map_path, "w") as fout:
-            json.dump(map_image_label, fout)
-
-        hexids_str = ""
-        for hexid, img_num in cells_image_num.items():
-            hexids_str += hexid + ","
-            cells_writer.writerow(
-                [
-                    map_cell_label[hexid],
-                    hexid,
-                    img_num,
-                    coords_mean[hexid][0] / img_num,
-                    coords_mean[hexid][1] / img_num
-                ]
-            )
-        hexids_str = hexids_str[:-1]
-        logging.info(f"Hex ids: {hexids_str}.")
+    cells_dataset = pd.DataFrame.from_records(cells_data)
+    path = os.path.join(output, filename)
+    logging.info(f"Write partitioning to {path}")
+    cells_dataset.to_csv(path, encoding="utf-8", index=False)
 
 
-def main(dataset, output, mapping_dir, img_min, img_max, lvl_min, lvl_max):
-    df = pd.read_csv(dataset, usecols=["img_id", "lat", "lon"])
+def main(img_min, img_max, output, datasets_dir, dataset_images, labeled_dataset, lvl_min, lvl_max):
+    df = pd.read_csv(os.path.join(datasets_dir, dataset_images), usecols=["img_id", "lat", "lon"])
     images_data = df.to_dict('records')
     images_num = len(images_data)
     logging.info(f"{images_num} images available")
@@ -147,17 +121,42 @@ def main(dataset, output, mapping_dir, img_min, img_max, lvl_min, lvl_max):
     logging.info(f"Number of classes: {len(cells_image_num)}")
     logging.info(f"Number of images: {len(images_data)}")
 
-    logging.info("Write output file")
-    write_output(images_data, cells_image_num, images_num, img_min, img_max, output, mapping_dir)
+    map_cell_label = {}
+    label = 0
+    for hexid in cells_image_num.keys():
+        map_cell_label[hexid] = label
+        label += 1
+
+    labeled_data = []
+    for data in images_data:
+        labeled_data.append({
+            "img_id": data["img_id"],
+            "lat": data["lat"],
+            "lon": data["lon"],
+            "class_label": map_cell_label[data["hexid"]],
+        })
+    labeled_df = pd.DataFrame.from_records(labeled_data)
+    path = os.path.join(datasets_dir, labeled_dataset)
+    logging.info(f"Write labeled dataset to {path}")
+    labeled_df.to_csv(path, encoding="utf-8", index=False)
+
+    write_output(
+        images_data,
+        cells_image_num,
+        map_cell_label,
+        output,
+        filename=f"cells_{img_min}_{img_max}_images_{images_num}.csv",
+    )
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--img-min", dest="img_min", type=int, required=True)
     parser.add_argument("--img-max", dest="img_max", type=int, required=True)
     parser.add_argument("--output", type=str, default="partitioning/output")
-    parser.add_argument("--mapping-dir", dest="mapping_dir", type=str, default="data/mapping")
+    parser.add_argument("--datasets-dir", dest="datasets_dir", type=str, default="data/datasets")
+    parser.add_argument("--dataset-images", dest="dataset_images", type=str, default="dataset_images.csv")
+    parser.add_argument("--labeled-dataset", dest="labeled_dataset", type=str, default="dataset_label_cell.csv")
 
     return parser.parse_args()
 
@@ -169,11 +168,12 @@ if __name__ == "__main__":
     logging.basicConfig(level=level)
 
     main(
-        dataset=args.dataset,
-        output=args.output,
-        mapping_dir=args.mapping_dir,
         img_min=args.img_min,
         img_max=args.img_max,
+        output=args.output,
+        datasets_dir=args.datasets_dir,
+        dataset_images=args.dataset_images,
+        labeled_dataset=args.labeled_dataset,
         lvl_min=2,
         lvl_max=30,
     )
