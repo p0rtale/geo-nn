@@ -95,7 +95,7 @@ def write_output(images_data, cells_image_num, map_cell_label, output, filename)
 
 
 def main(img_min, img_max, output, datasets_dir, dataset_images, labeled_dataset, lvl_min, lvl_max):
-    df = pd.read_csv(os.path.join(datasets_dir, dataset_images), usecols=["img_id", "lat", "lon"])
+    df = pd.read_csv(os.path.join(datasets_dir, dataset_images), usecols=["img_path", "lat", "lon"])
     images_data = df.to_dict('records')
     images_num = len(images_data)
     logging.info(f"{images_num} images available")
@@ -130,7 +130,7 @@ def main(img_min, img_max, output, datasets_dir, dataset_images, labeled_dataset
     labeled_data = []
     for data in images_data:
         labeled_data.append({
-            "img_id": data["img_id"],
+            "img_path": data["img_path"],
             "lat": data["lat"],
             "lon": data["lon"],
             "class_label": map_cell_label[data["hexid"]],
