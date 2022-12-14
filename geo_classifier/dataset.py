@@ -15,7 +15,7 @@ from PIL import Image
 
 class PhotoCoordsDataset(torch.utils.data.Dataset):
     def __init__(self, dataset_path, images_dir, transforms):
-        self.images_path = images_path
+        self.images_dir = images_dir
         self.transforms = transforms
         self.dataset = pd.read_csv(dataset_path)
 

@@ -11,7 +11,7 @@ from pathlib import Path
 import pytorch_lightning as pl
 from torchmetrics.classification import MulticlassAccuracy
 
-from geo_classifier.dataset import PhotoCoordsCountryDataset
+from geo_classifier.dataset import PhotoCoordsDataset
 
 
 class GeoClassifier(pl.LightningModule):
@@ -120,7 +120,7 @@ class GeoClassifier(pl.LightningModule):
             ]
         )
 
-        dataset = PhotoCoordsCountryDataset(
+        dataset = PhotoCoordsDataset(
             dataset_path=self.hparams.dataset_path,
             images_dir=self.hparams.images_dir,
             transforms=transforms,

@@ -16,7 +16,7 @@ model_params:
       milestones: [4, 8, 12, 13, 14, 15]
   num_classes: 73
   num_workers_per_loader: 6
-  images_dir: images/
+  images_dir: data/images/
   dataset_path: data/datasets/dataset_label.csv
 
 trainer_params:
