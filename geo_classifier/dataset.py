@@ -27,7 +27,8 @@ class PhotoCoordsDataset(torch.utils.data.Dataset):
         data = self.dataset.iloc[idx // 3]
         img_path, lat, lon, class_label = data["img_path"], data["lat"], data["lon"], int(data["class_label"])
 
-        image = Image.open(os.path.join(self.images_dir, img_path)).convert("RGB")
+        # image = Image.open(os.path.join(self.images_dir, img_path)).convert("RGB")
+        image = Image.open(img_path).convert("RGB")
         w, h = image.size
         image = image.crop((w // 3 * subimg_num, 0, w // 3 * (subimg_num + 1), h))
         if image.width > 320 and image.height > 320:
